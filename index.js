@@ -1,6 +1,7 @@
 const express = require("express")
 const { resolve } = require("path")
 const cors = require("cors")
+const { seedDataBase } = require("./controller/libController")
 
 const app = express()
 const port = 3000
@@ -13,6 +14,8 @@ app.get("/", (req, res) => {
   res.sendFile(resolve(__dirname, "pages/index.html"))
 })
 
+app.get("/seed_db", seedDataBase)
+
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Server listening at http://localhost:${port}`)
 })
