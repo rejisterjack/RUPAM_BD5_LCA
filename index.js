@@ -1,7 +1,7 @@
 const express = require("express")
 const { resolve } = require("path")
 const cors = require("cors")
-const { seedDataBase } = require("./controller/libController")
+const { seedDataBase, getAllBooks } = require("./controller/libController")
 
 const app = express()
 const port = 3000
@@ -15,6 +15,7 @@ app.get("/", (req, res) => {
 })
 
 app.get("/seed_db", seedDataBase)
+app.get("/books", getAllBooks)
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`)

@@ -1,8 +1,14 @@
 const { sequelize, DataTypes } = require("../lib/sequelize")
 
-const Genre = sequelize.define("Genre", {
-  name: DataTypes.STRING,
-  description: DataTypes.TEXT,
-})
+const Genre = sequelize.define(
+  "Genre",
+  {
+    name: DataTypes.STRING,
+    description: DataTypes.TEXT,
+  },
+  {
+    timestamps: false,
+  }
+)
 
 module.exports = Genre
