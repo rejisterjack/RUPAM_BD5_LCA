@@ -52,21 +52,114 @@ const seedDataBase = async (req, res) => {
 
     res.send("Database Seeded Successfully!")
   } catch (err) {
-    res.status(500).send({ message: err.message })
+    res.status(500).json({ message: err.message })
   }
 }
 
 // get all books
 const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.findAll()
-    res.status(200).send({ books })
+    const books = await Book.findAll({
+      include: [{ model: Author }, { model: Genre }],
+    })
+    res.status(200).json({ books })
   } catch (err) {
-    res.status(500).send({ message: err.message })
+    res.status(500).json({ message: err.message })
+  }
+}
+
+// books by author
+const booksByAuthor = async (req, res) => {
+  try {
+    const books = await Book.findAll({
+      where: {
+        authorId: req.params.authorId,
+      },
+      include: [{ model: Genre }],
+    })
+    if (!books.length)
+      return res.status(404).json({ message: "No books found for this author" })
+    res.status(200).json({
+      books,
+    })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+// books by genre
+const booksByGenre = async (req, res) => {
+  try {
+    const genre = await Genre.findByPk(req.params.genreId)
+    if (!genre) return res.status(404).json({ message: "genre not found" })
+
+    const books = await Book.findAll({
+      include: [
+        { model: Author },
+        { model: Genre, where: { id: req.params.genreId } },
+      ],
+    })
+
+    if (!books.length)
+      return res.status(200).json({
+        message: "no books found",
+      })
+    res.status(200).json({ books })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+const addBook = async (req, res) => {
+  try {
+    const { title, description, publicationYear, authorId, genreIds } = req.body
+
+    if (!title || !description || !publicationYear || !authorId || !genreIds)
+      return res.status(400).json({
+        message: "missing required fields",
+      })
+
+    const author = await Author.findByPk(authorId)
+    if (!author)
+      return res.status(400).json({
+        message: "Author not found",
+      })
+
+    const genres = await Genre.findAll({
+      where: { id: genreIds },
+    })
+
+    if (genres.length !== genreIds.length) {
+      return res.status(404).json({ error: "One or more genres not found" })
+    }
+
+    const book = await Book.create({
+      title,
+      description,
+      publicationYear,
+      authorId,
+    })
+
+    await book.setGenres(genres)
+
+    const completeBook = await Book.findByPk(book.id, {
+      include: [{ model: Author }, { model: Genre }],
+    })
+
+    res.status(201).json({ book: completeBook })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({
+      message: err.message,
+      errors: err.errors,
+    })
   }
 }
 
 module.exports = {
   seedDataBase,
   getAllBooks,
+  booksByAuthor,
+  booksByGenre,
+  addBook,
 }
