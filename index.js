@@ -7,6 +7,8 @@ const {
   booksByAuthor,
   booksByGenre,
   addBook,
+  addAuthor,
+  authorsByGenre,
 } = require("./controller/libController")
 
 const app = express()
@@ -25,6 +27,8 @@ app.get("/books", getAllBooks)
 app.get("/authors/:authorId/books", booksByAuthor)
 app.get("/genres/:genreId/books", booksByGenre)
 app.post("/books", addBook)
+app.post("/author/new", addAuthor)
+app.get("/genres/:genreId/authors", authorsByGenre)
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`)

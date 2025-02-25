@@ -156,10 +156,71 @@ const addBook = async (req, res) => {
   }
 }
 
+// add a author
+const addAuthor = async (req, res) => {
+  try {
+    const { name, birthdate, email } = req.body
+
+    if (!name || !birthdate || !email) {
+      return res.status(400).json({ message: "missing required fields" })
+    }
+
+    const newAuthor = await Author.create({
+      name,
+      birthdate,
+      email,
+    })
+
+    res
+      .status(201)
+      .json({ message: "New author created successfully", author: newAuthor })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+// get authors by genre
+const authorsByGenre = async (req, res) => {
+  try {
+    const genreId = req.params.genreId
+
+    const genre = await Genre.findByPk(genreId)
+
+    if (!genre) return res.status(400).json({ message: "No genre found" })
+
+    const books = await Book.findAll({
+      include: [
+        {
+          model: Genre,
+          where: {
+            id: genreId,
+          },
+        },
+      ],
+    })
+
+    const authorIds = Array.from(
+      new Set(books.flatMap((item) => item.authorId))
+    )
+
+    const authors = await Author.findAll({
+      where: {
+        id: authorIds,
+      },
+    })
+
+    res.status(200).json({ authors })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
 module.exports = {
   seedDataBase,
   getAllBooks,
   booksByAuthor,
   booksByGenre,
   addBook,
+  addAuthor,
+  authorsByGenre,
 }
